@@ -1,33 +1,16 @@
-# Exclude documentation files from Static Web App deployment
+# Documentation
 *.md
-README.md
-REQUIREMENTS.md
-SETUP.md
-DEPLOYMENT.md
-COSMOS_DB_SETUP.md
-BACKEND_GUIDE.md
 
-# Exclude development files
+# Development
 .git/
-.github/
 .vscode/
-.env*
+.env.local
 *.log
 
-# Exclude large files
+# Large files
 *.docx
 *.pdf
-*.xlsx
-
-# Exclude Azurite files
 __azurite_db_*
-__blobstorage__
-__queuestorage__
-__tablestorage__
-
-# Exclude source files (keep only dist)
-src/**/*.test.ts
-src/**/*.test.tsx
 src/**/*.spec.ts
 src/**/*.spec.tsx
 

@@ -1,52 +1,19 @@
-# Ignore source files - only deploy compiled JS
-*.ts
-!*.d.ts
-tsconfig.json
-
-# Ignore source maps - they're huge
-*.map
-
-# Ignore source directories
-src/
-
-# Ignore documentation
+# Development files
 *.md
-README.md
-docs/
-
-# Ignore development dependencies
-node_modules/@types/
-node_modules/typescript/
-node_modules/.cache/
-node_modules/.bin/
-
-# Ignore Git files
 .git*
 .vscode/
-.idea/
 
-# Ignore local settings and secrets
+# Local settings only
 local.settings.json
-.env*
-*.secret
+.env.local
 
-# Ignore test files
-*.test.js
-*.test.ts
-*.spec.js
-*.spec.ts
-__tests__/
-test/
-tests/
-
-# Ignore build artifacts
+# Build artifacts
+*.map
 dist/
-build/
-coverage/
 
-# Ignore logs
-*.log
-logs/
+# Heavy dev dependencies
+node_modules/azure-functions-core-tools/
+node_modules/.cache/
 
 # Ignore OS files
 .DS_Store

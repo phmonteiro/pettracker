@@ -19,69 +19,16 @@ jobs:
         with:
           submodules: true
           lfs: false
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      - name: Install dependencies and build
-        run: |
-          echo "Installing root dependencies..."
-          npm ci
-          echo "Building frontend..."
-          npm run build
-          echo "Installing API production dependencies..."
-          cd api
-          npm ci --production --ignore-scripts
-          echo "Building API TypeScript..."
-          cd ..
-          npm install --prefix api typescript --save-dev
-          cd api
-          npm run build
-          echo "Build complete"
-      - name: Clean up API folder before deploy
-        run: |
-          echo "Cleaning API folder for deployment..."
-          cd api
-          # Remove only heavy devDependencies
-          rm -rf node_modules/azure-functions-core-tools
-          rm -rf node_modules/.cache
-          # Remove source TypeScript files from function folders (keep compiled JS)
-          find ./users -name "*.ts" -type f -delete 2>/dev/null || true
-          find ./walks -name "*.ts" -type f -delete 2>/dev/null || true
-          find ./challenges -name "*.ts" -type f -delete 2>/dev/null || true
-          find ./events -name "*.ts" -type f -delete 2>/dev/null || true
-          # Remove root level .ts files except in src folder
-          rm -f *.ts
-          # Remove source maps to reduce size
-          find . -name "*.map" -type f -delete
-          # Count remaining files
-          echo "Files in api folder after cleanup:"
-          find . -type f | wc -l
-          echo "Cleanup complete"
-      - name: Remove documentation files
-        run: |
-          echo "Removing documentation files to reduce bundle size..."
-          rm -f *.md
-          rm -f api/*.md
-          rm -f *.docx *.pdf *.xlsx
-          rm -f __azurite_db_* 2>/dev/null || true
-          echo "Documentation files removed"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_GLACIER_0813F2803 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # App source code path
-          api_location: "api" # Api source code path - optional
-          output_location: "dist" # Built app content directory - optional
-          skip_app_build: true # We already built the frontend
-          ###### End of Repository/Build Configurations ######
-        env:
-          NODE_ENV: production
+          app_location: "/"
+          api_location: "api"
+          output_location: "dist"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
