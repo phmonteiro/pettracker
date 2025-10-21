@@ -76,6 +76,7 @@ jobs:
           app_location: "/" # App source code path
           api_location: "api" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
+          skip_app_build: true # We already built the frontend
           skip_api_build: true # We already built the API with Node 20
           ###### End of Repository/Build Configurations ######
         env:
