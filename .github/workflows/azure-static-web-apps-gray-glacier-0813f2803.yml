@@ -23,27 +23,37 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - name: Install production dependencies only
+      - name: Install dependencies and build
         run: |
-          echo "Installing production dependencies..."
-          npm ci --production
+          echo "Installing root dependencies..."
+          npm ci
+          echo "Building frontend..."
+          npm run build
+          echo "Installing API production dependencies..."
           cd api
           npm ci --production --ignore-scripts
-          echo "Production dependencies installed"
-      - name: Clean up API folder before build
+          echo "Building API TypeScript..."
+          cd ..
+          npm install --prefix api typescript --save-dev
+          cd api
+          npm run build
+          echo "Build complete"
+      - name: Clean up API folder before deploy
         run: |
-          echo "Cleaning API folder..."
+          echo "Cleaning API folder for deployment..."
           cd api
           # Remove all devDependencies from node_modules
           rm -rf node_modules/@types node_modules/typescript node_modules/azure-functions-core-tools
           rm -rf node_modules/.cache node_modules/.bin
-          # Remove dist folder
+          # Remove source TypeScript files (keep only compiled JS)
+          find . -name "*.ts" ! -name "*.d.ts" -type f -delete
+          # Remove dist folder if exists
           rm -rf dist
           # Remove all logs and maps
           rm -f *.log
           find . -name "*.map" -type f -delete
           # Count remaining files
-          echo "Files in api folder:"
+          echo "Files in api folder after cleanup:"
           find . -type f | wc -l
           echo "Cleanup complete"
       - name: Remove documentation files
