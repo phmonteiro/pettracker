@@ -78,9 +78,12 @@ jobs:
           output_location: "dist" # Built app content directory - optional
           skip_app_build: true # We already built the frontend
           skip_api_build: true # We already built the API with Node 20
+          api_build_command: "echo 'API already built'"
           ###### End of Repository/Build Configurations ######
         env:
           NODE_ENV: production
+          API_LANGUAGE: "node"
+          API_LANGUAGE_VERSION: "20"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
