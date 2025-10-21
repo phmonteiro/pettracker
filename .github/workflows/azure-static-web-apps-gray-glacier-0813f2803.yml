@@ -23,14 +23,28 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+      - name: Install production dependencies only
+        run: |
+          echo "Installing production dependencies..."
+          npm ci --production
+          cd api
+          npm ci --production --ignore-scripts
+          echo "Production dependencies installed"
       - name: Clean up API folder before build
         run: |
           echo "Cleaning API folder..."
           cd api
-          rm -rf node_modules/.cache
+          # Remove all devDependencies from node_modules
+          rm -rf node_modules/@types node_modules/typescript node_modules/azure-functions-core-tools
+          rm -rf node_modules/.cache node_modules/.bin
+          # Remove dist folder
           rm -rf dist
+          # Remove all logs and maps
           rm -f *.log
           find . -name "*.map" -type f -delete
+          # Count remaining files
+          echo "Files in api folder:"
+          find . -type f | wc -l
           echo "Cleanup complete"
       - name: Remove documentation files
         run: |
@@ -52,7 +66,10 @@ jobs:
           app_location: "/" # App source code path
           api_location: "api" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
+          skip_api_build: false
           ###### End of Repository/Build Configurations ######
+        env:
+          NODE_ENV: production
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
