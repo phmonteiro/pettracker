@@ -32,6 +32,14 @@ jobs:
           rm -f *.log
           find . -name "*.map" -type f -delete
           echo "Cleanup complete"
+      - name: Remove documentation files
+        run: |
+          echo "Removing documentation files to reduce bundle size..."
+          rm -f *.md
+          rm -f api/*.md
+          rm -f *.docx *.pdf *.xlsx
+          rm -f __azurite_db_* 2>/dev/null || true
+          echo "Documentation files removed"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
