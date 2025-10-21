@@ -28,6 +28,23 @@ dist-ssr
 .env.local
 .env.production
 *.secret
+
+# Azure Azurite storage emulator
+__azurite_db_*
+__blobstorage__
+__queuestorage__
+__tablestorage__
+
+# Large document files (use Git LFS if needed)
+*.docx
+*.pdf
+*.xlsx
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
 config/credentials.json
 
 # Build files

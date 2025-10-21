@@ -69,14 +69,14 @@ Azure Static Web Apps automatically deploys both frontend and API together.
 az login
 
 # Set your subscription
-az account set --subscription "your-subscription-id"
+az account set --subscription "8c76f2ce-6939-4b55-8114-966dd80721f7"
 
 # Create Static Web App (it will detect the Functions API automatically)
 az staticwebapp create `
   --name pettracker-app `
   --resource-group rg-techradar-aut-001 `
   --location westeurope `
-  --source https://github.com/your-username/pettracker `
+  --source https://github.com/phmonteiro/pettracker `
   --branch main `
   --app-location "/" `
   --api-location "api" `

@@ -1,28 +1,59 @@
 # Ignore source files - only deploy compiled JS
 *.ts
 !*.d.ts
+tsconfig.json
 
-# Ignore source maps
+# Ignore source maps - they're huge
 *.map
 
 # Ignore source directories
 src/
 
+# Ignore documentation
+*.md
+README.md
+docs/
+
 # Ignore development dependencies
-node_modules/.bin
-node_modules/typescript
-node_modules/@types
+node_modules/@types/
+node_modules/typescript/
+node_modules/.cache/
+node_modules/.bin/
 
 # Ignore Git files
 .git*
+.vscode/
+.idea/
 
-# Ignore local settings
+# Ignore local settings and secrets
 local.settings.json
+.env*
+*.secret
 
 # Ignore test files
 *.test.js
+*.test.ts
 *.spec.js
+*.spec.ts
+__tests__/
+test/
+tests/
 
-# Ignore documentation
-README.md
-*.md
+# Ignore build artifacts
+dist/
+build/
+coverage/
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary files
+*.tmp
+*.temp
+tmp/
+temp/

@@ -23,6 +23,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+      - name: Clean up API folder before build
+        run: |
+          echo "Cleaning API folder..."
+          cd api
+          rm -rf node_modules/.cache
+          rm -rf dist
+          rm -f *.log
+          find . -name "*.map" -type f -delete
+          echo "Cleanup complete"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
