@@ -42,16 +42,17 @@ jobs:
         run: |
           echo "Cleaning API folder for deployment..."
           cd api
-          # Remove only heavy devDependencies, keep typescript for Azure detection
+          # Remove only heavy devDependencies
           rm -rf node_modules/azure-functions-core-tools
           rm -rf node_modules/.cache
-          # Remove source TypeScript files (keep only compiled JS and package.json)
-          find . -maxdepth 1 -name "*.ts" ! -name "*.d.ts" -type f -delete
-          find ./*/. -name "*.ts" ! -name "*.d.ts" -type f -delete 2>/dev/null || true
-          # Remove dist folder if exists
-          rm -rf dist
-          # Remove all logs and maps
-          rm -f *.log
+          # Remove source TypeScript files from function folders (keep compiled JS)
+          find ./users -name "*.ts" -type f -delete 2>/dev/null || true
+          find ./walks -name "*.ts" -type f -delete 2>/dev/null || true
+          find ./challenges -name "*.ts" -type f -delete 2>/dev/null || true
+          find ./events -name "*.ts" -type f -delete 2>/dev/null || true
+          # Remove root level .ts files except in src folder
+          rm -f *.ts
+          # Remove source maps to reduce size
           find . -name "*.map" -type f -delete
           # Count remaining files
           echo "Files in api folder after cleanup:"

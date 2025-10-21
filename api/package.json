@@ -2,7 +2,7 @@
   "name": "pet-tracker-api",
   "version": "1.0.0",
   "description": "Azure Functions API for Pet Tracker",
-  "main": "src/index.js",
+  "main": "src/functions.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
