@@ -262,25 +262,30 @@ class CosmosDBClient {
 
   async getAllEvents(): Promise<TrackimoEvent[]> {
     const container = this.getContainer(CONTAINERS.EVENTS);
-    const { resources } = await container.items.readAll<TrackimoEvent>().fetchAll();
-    return resources;
+    const { resources } = await container.items.readAll<any>().fetchAll();
+    return resources as TrackimoEvent[];
   }
 
   async saveEvent(event: TrackimoEvent): Promise<void> {
     const container = this.getContainer(CONTAINERS.EVENTS);
-    await container.items.upsert(event);
+    // Convert to storage format with string id
+    const eventWithStringId = { ...event, id: event.id.toString() };
+    await container.items.upsert(eventWithStringId);
   }
 
   async saveEvents(events: TrackimoEvent[]): Promise<void> {
     const container = this.getContainer(CONTAINERS.EVENTS);
-    await Promise.all(events.map((event) => container.items.upsert(event)));
+    await Promise.all(events.map((event) => {
+      const eventWithStringId = { ...event, id: event.id.toString() };
+      return container.items.upsert(eventWithStringId);
+    }));
   }
 
   async deleteAllEvents(): Promise<void> {
     const events = await this.getAllEvents();
     const container = this.getContainer(CONTAINERS.EVENTS);
     await Promise.all(
-      events.map((event) => container.item(event.id.toString(), event.deviceId.toString()).delete())
+      events.map((event) => container.item(event.id.toString(), event.device_id.toString()).delete())
     );
   }
 

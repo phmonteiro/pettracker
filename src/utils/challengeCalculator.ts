@@ -4,11 +4,9 @@ import {
   startOfMonth,
   endOfMonth,
   format,
-  isSameDay,
   isWithinInterval,
   differenceInDays,
   addDays,
-  getISOWeek,
   getYear,
   getMonth,
   isSunday,
@@ -18,13 +16,10 @@ import {
 import type {
   Walk,
   Challenge,
-  ChallengeType,
   User,
-  PetPlan,
 } from '@/types';
 import {
   CHALLENGE_REWARDS,
-  MIN_WALK_DURATION_SECONDS,
   LONG_WALK_DURATION_SECONDS,
   REQUIRED_CONSECUTIVE_LONG_WALKS,
   REQUIRED_DAILY_WALKS,

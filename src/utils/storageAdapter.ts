@@ -193,7 +193,7 @@ export async function getChallengesByUserId(userId: string): Promise<Challenge[]
   }
   const challenges = getFromLocalStorage<Challenge>(STORAGE_KEYS.CHALLENGES);
   return challenges.filter((c) => c.userId === userId).sort(
-    (a, b) => b.period.localeCompare(a.period)
+    (a, b) => (b.year * 100 + b.month) - (a.year * 100 + a.month)
   );
 }
 
@@ -202,11 +202,16 @@ export async function getChallengesByPeriod(startDate: Date, endDate: Date): Pro
     return await cosmosClient.getChallengesByPeriod(startDate, endDate);
   }
   const challenges = getFromLocalStorage<Challenge>(STORAGE_KEYS.CHALLENGES);
-  const startStr = startDate.toISOString().substring(0, 10);
-  const endStr = endDate.toISOString().substring(0, 10);
-  return challenges.filter((c) => c.period >= startStr && c.period <= endStr).sort(
-    (a, b) => b.period.localeCompare(a.period)
-  );
+  const startYear = startDate.getFullYear();
+  const startMonth = startDate.getMonth() + 1;
+  const endYear = endDate.getFullYear();
+  const endMonth = endDate.getMonth() + 1;
+  return challenges.filter((c) => {
+    const challengePeriod = c.year * 100 + c.month;
+    const startPeriod = startYear * 100 + startMonth;
+    const endPeriod = endYear * 100 + endMonth;
+    return challengePeriod >= startPeriod && challengePeriod <= endPeriod;
+  }).sort((a, b) => (b.year * 100 + b.month) - (a.year * 100 + a.month));
 }
 
 export async function saveChallenge(challenge: Challenge): Promise<void> {

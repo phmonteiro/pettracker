@@ -49,7 +49,7 @@ function ChallengesChart({ data }: ChallengesChartProps) {
           />
           <Legend />
           <Bar dataKey="rate" name="Taxa de Conclusão (%)" fill="#10b981">
-            {data.map((entry, index) => (
+            {data.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Bar>
