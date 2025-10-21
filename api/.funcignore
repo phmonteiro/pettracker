@@ -1,0 +1,28 @@
+# Ignore source files - only deploy compiled JS
+*.ts
+!*.d.ts
+
+# Ignore source maps
+*.map
+
+# Ignore source directories
+src/
+
+# Ignore development dependencies
+node_modules/.bin
+node_modules/typescript
+node_modules/@types
+
+# Ignore Git files
+.git*
+
+# Ignore local settings
+local.settings.json
+
+# Ignore test files
+*.test.js
+*.spec.js
+
+# Ignore documentation
+README.md
+*.md

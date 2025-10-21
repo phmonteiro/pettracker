@@ -3,3 +3,12 @@ dist
 .vscode
 local.settings.json
 *.log
+
+# Ignore compiled JavaScript and source maps (they'll be built during deployment)
+**/*.js
+**/*.js.map
+!host.json
+
+# Don't ignore package files
+!package.json
+!package-lock.json
