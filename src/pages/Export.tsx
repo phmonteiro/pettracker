@@ -2,13 +2,13 @@ function Export() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Exportar Dados</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Exportar Dados</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
           Exportar relatórios mensais de recompensas para Excel
         </p>
       </div>
 
-      <div className="card bg-red-50 border-l-4 border-fidelidade-red">
+      <div className="card bg-red-50 dark:bg-red-900/20 border-l-4 border-fidelidade-red">
         <div className="flex items-start">
           <div className="flex-shrink-0">
             <svg

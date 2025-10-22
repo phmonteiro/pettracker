@@ -14,7 +14,7 @@ function Sync() {
   const [error, setError] = useState<string | null>(null);
 
   // Date range selection
-  const [selectedRange, setSelectedRange] = useState<string>('last_month');
+  const [selectedRange, setSelectedRange] = useState<string>('2'); // Default to "Último mês" (index 2)
   const [customFromDate, setCustomFromDate] = useState<string>('');
   const [customToDate, setCustomToDate] = useState<string>('');
 
@@ -80,8 +80,8 @@ function Sync() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Sincronização</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Sincronização</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
           Sincronize dados da API Trackimo para atualizar utilizadores, passeios e desafios
         </p>
       </div>
@@ -99,11 +99,11 @@ function Sync() {
       <div className="card">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
               <Users className="h-6 w-6 mr-2 text-fidelidade-red" />
               Sincronizar Utilizadores
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
               Busca todos os utilizadores e dispositivos da conta Trackimo principal
             </p>
           </div>
@@ -137,21 +137,21 @@ function Sync() {
                   )}
 
                   {usersResult.totalProcessed > 0 && (
-                    <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                       <div className="text-center">
                         <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">{usersResult.newUsers}</p>
-                        <p className="text-xs text-gray-600">Novos</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{usersResult.newUsers}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Novos</p>
                       </div>
                       <div className="text-center">
                         <RefreshCw className="h-8 w-8 text-fidelidade-red mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">{usersResult.updatedUsers}</p>
-                        <p className="text-xs text-gray-600">Atualizados</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{usersResult.updatedUsers}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Atualizados</p>
                       </div>
                       <div className="text-center">
                         <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">{usersResult.errors}</p>
-                        <p className="text-xs text-gray-600">Erros</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{usersResult.errors}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Erros</p>
                       </div>
                     </div>
                   )}
@@ -167,7 +167,7 @@ function Sync() {
                 <span>Sincronizar Utilizadores</span>
               </button>
 
-              <div className="text-sm text-gray-500 mt-2">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 <p>⚠️ Esta operação pode demorar alguns minutos dependendo do número de utilizadores.</p>
               </div>
             </>
@@ -179,11 +179,11 @@ function Sync() {
       <div className="card">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
               <Calendar className="h-6 w-6 mr-2 text-green-600" />
               Sincronizar Eventos e Passeios
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
               Busca eventos de entrada/saída de geozonas e processa passeios e desafios
             </p>
           </div>
@@ -279,30 +279,30 @@ function Sync() {
                   )}
 
                   {eventsResult.totalEvents > 0 && (
-                    <div className="grid grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                       <div className="text-center">
                         <Database className="h-8 w-8 text-fidelidade-red mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">{eventsResult.totalEvents}</p>
-                        <p className="text-xs text-gray-600">Eventos</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{eventsResult.totalEvents}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Eventos</p>
                       </div>
                       <div className="text-center">
                         <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">{eventsResult.savedWalks}</p>
-                        <p className="text-xs text-gray-600">Passeios</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{eventsResult.savedWalks}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Passeios</p>
                       </div>
                       <div className="text-center">
                         <CheckCircle className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
                           {eventsResult.processedChallenges}
                         </p>
-                        <p className="text-xs text-gray-600">Desafios</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Desafios</p>
                       </div>
                       <div className="text-center">
                         <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-gray-900">
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
                           {eventsResult.errors?.length || 0}
                         </p>
-                        <p className="text-xs text-gray-600">Erros</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Erros</p>
                       </div>
                     </div>
                   )}
@@ -318,7 +318,7 @@ function Sync() {
                 <span>Sincronizar Eventos</span>
               </button>
 
-              <div className="text-sm text-gray-500 mt-2">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 <p>
                   ⚠️ Certifique-se de que sincronizou os utilizadores primeiro. Esta operação pode
                   demorar alguns minutos.
@@ -330,7 +330,7 @@ function Sync() {
       </div>
 
       {/* Info Card */}
-      <div className="card bg-red-50 border-l-4 border-fidelidade-red">
+      <div className="card bg-red-50 dark:bg-red-900/20 border-l-4 border-fidelidade-red">
         <div className="flex items-start">
           <div className="flex-shrink-0">
             <svg
@@ -348,8 +348,8 @@ function Sync() {
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Processo de Sincronização</h3>
-            <div className="mt-2 text-sm text-red-700 space-y-2">
+            <h3 className="text-sm font-medium text-red-800 dark:text-white">Processo de Sincronização</h3>
+            <div className="mt-2 text-sm text-red-700 dark:text-white space-y-2">
               <p>
                 <strong>1. Sincronizar Utilizadores:</strong> Busca todos os utilizadores e
                 dispositivos da conta Trackimo. Execute isto primeiro e sempre que houver novos

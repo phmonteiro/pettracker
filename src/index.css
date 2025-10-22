@@ -17,6 +17,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.dark {
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #1a1a1a;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -26,6 +32,11 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+body.dark {
+  background-color: #1a1a1a;
 }
 
 #root {
@@ -54,15 +65,15 @@ body {
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6;
   }
 
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fidelidade-red focus:border-transparent;
+    @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-fidelidade-red focus:border-transparent;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-2;
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
   }
 
   .table {

@@ -23,7 +23,7 @@ function ChallengesChart({ data }: ChallengesChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Taxa de Conclusão de Desafios</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Taxa de Conclusão de Desafios</h3>
         <div className="text-center py-8 text-gray-500">
           <p>Sem dados de desafios disponíveis.</p>
         </div>
@@ -35,7 +35,7 @@ function ChallengesChart({ data }: ChallengesChartProps) {
 
   return (
     <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Taxa de Conclusão de Desafios</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Taxa de Conclusão de Desafios</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -64,7 +64,7 @@ function ChallengesChart({ data }: ChallengesChartProps) {
               style={{ backgroundColor: COLORS[index % COLORS.length] }}
             />
             <div className="text-sm">
-              <p className="font-medium text-gray-900">{item.type}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{item.type}</p>
               <p className="text-gray-500">
                 {item.completed} / {item.total} ({item.rate}%)
               </p>

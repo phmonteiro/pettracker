@@ -1,14 +1,14 @@
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import type { User, Walk, Challenge, DashboardStats, TopUser } from '@/types';
-import { getAllUsers, getAllWalks, getAllChallenges } from './storage';
+import { backendAPI } from '@/api/backendClient';
 
 /**
  * Calculate comprehensive dashboard statistics
  */
-export function calculateDashboardStats(): DashboardStats {
-  const users = getAllUsers();
-  const walks = getAllWalks();
-  const challenges = getAllChallenges();
+export async function calculateDashboardStats(): Promise<DashboardStats> {
+  const users = await backendAPI.getUsers();
+  const walks = await backendAPI.getWalks();
+  const challenges = await backendAPI.getChallenges();
 
   // Get last month's date range
   const now = new Date();
@@ -103,8 +103,8 @@ export function calculateTopUsers(
 /**
  * Get walks grouped by month for chart data
  */
-export function getWalksChartData(months: number = 6): Array<{ month: string; walks: number }> {
-  const walks = getAllWalks();
+export async function getWalksChartData(months: number = 6): Promise<Array<{ month: string; walks: number }>> {
+  const walks = await backendAPI.getWalks();
   const now = new Date();
   const chartData: Array<{ month: string; walks: number }> = [];
 
@@ -113,7 +113,7 @@ export function getWalksChartData(months: number = 6): Array<{ month: string; wa
     const monthStart = startOfMonth(targetDate);
     const monthEnd = endOfMonth(targetDate);
 
-    const monthWalks = walks.filter((walk) => {
+    const monthWalks = walks.filter((walk: Walk) => {
       const walkDate = new Date(walk.startTime);
       return walkDate >= monthStart && walkDate <= monthEnd && walk.isValid;
     });
@@ -130,13 +130,13 @@ export function getWalksChartData(months: number = 6): Array<{ month: string; wa
 /**
  * Get challenges completion rate by type
  */
-export function getChallengesChartData(): Array<{
+export async function getChallengesChartData(): Promise<Array<{
   type: string;
   completed: number;
   total: number;
   rate: number;
-}> {
-  const challenges = getAllChallenges();
+}>> {
+  const challenges = await backendAPI.getChallenges();
 
   const challengeTypes = [
     { key: 'weekly_three_walks', label: 'Passeios Semanais' },
@@ -146,8 +146,8 @@ export function getChallengesChartData(): Array<{
   ];
 
   return challengeTypes.map(({ key, label }) => {
-    const typeChallenges = challenges.filter((c) => c.type === key);
-    const completed = typeChallenges.filter((c) => c.status === 'completed').length;
+    const typeChallenges = challenges.filter((c: Challenge) => c.type === key);
+    const completed = typeChallenges.filter((c: Challenge) => c.status === 'completed').length;
     const total = typeChallenges.length;
     const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
@@ -163,8 +163,8 @@ export function getChallengesChartData(): Array<{
 /**
  * Get pet plan distribution
  */
-export function getPetPlanDistribution(): Array<{ plan: string; count: number }> {
-  const users = getAllUsers();
+export async function getPetPlanDistribution(): Promise<Array<{ plan: string; count: number }>> {
+  const users = await backendAPI.getUsers();
 
   const planCounts: Record<string, number> = {
     'Pet 1': 0,
@@ -173,7 +173,7 @@ export function getPetPlanDistribution(): Array<{ plan: string; count: number }>
     'Pet Vital': 0,
   };
 
-  users.forEach((user) => {
+  users.forEach((user: User) => {
     if (planCounts[user.petPlan] !== undefined) {
       planCounts[user.petPlan]++;
     }
@@ -188,11 +188,11 @@ export function getPetPlanDistribution(): Array<{ plan: string; count: number }>
 /**
  * Get recent activity (last 10 walks)
  */
-export function getRecentActivity(limit: number = 10): Walk[] {
-  const walks = getAllWalks();
+export async function getRecentActivity(limit: number = 10): Promise<Walk[]> {
+  const walks = await backendAPI.getWalks();
 
   return walks
-    .filter((w) => w.isValid)
-    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+    .filter((w: Walk) => w.isValid)
+    .sort((a: Walk, b: Walk) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
     .slice(0, limit);
 }

@@ -19,12 +19,12 @@ function Dashboard() {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadDashboardData = () => {
+  const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      const dashboardStats = calculateDashboardStats();
-      const walksData = getWalksChartData(6);
-      const challengesData = getChallengesChartData();
+      const dashboardStats = await calculateDashboardStats();
+      const walksData = await getWalksChartData(6);
+      const challengesData = await getChallengesChartData();
 
       setStats(dashboardStats);
       setWalksChartData(walksData);
@@ -45,7 +45,7 @@ function Dashboard() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <RefreshCw className="h-8 w-8 text-fidelidade-red animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">A carregar dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-400">A carregar dashboard...</p>
         </div>
       </div>
     );
@@ -54,7 +54,7 @@ function Dashboard() {
   if (!stats) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600">Erro ao carregar dados do dashboard.</p>
+        <p className="text-gray-600 dark:text-gray-400">Erro ao carregar dados do dashboard.</p>
         <button onClick={loadDashboardData} className="btn btn-primary mt-4">
           Tentar novamente
         </button>
@@ -67,8 +67,8 @@ function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Visão geral do programa de recompensas Pet Tracker</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Visão geral do programa de recompensas Pet Tracker</p>
         </div>
         <button
           onClick={loadDashboardData}
@@ -139,8 +139,8 @@ function Dashboard() {
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Informação</h3>
-            <div className="mt-2 text-sm text-red-700">
+            <h3 className="text-sm font-medium text-red-800 dark:text-white">Informação</h3>
+            <div className="mt-2 text-sm text-red-700 dark:text-white">
               <p>
                 Os dados apresentados refletem as estatísticas dos passeios e desafios completados.
                 Para atualizar os dados, vá para a página de <strong>Sincronização</strong> e
@@ -155,7 +155,7 @@ function Dashboard() {
       {stats.totalUsers === 0 && (
         <div className="card text-center py-12">
           <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Ainda não há utilizadores</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Ainda não há utilizadores</h3>
           <p className="text-gray-600 mb-6">
             Comece por sincronizar os utilizadores da API Trackimo para ver os dados no dashboard.
           </p>

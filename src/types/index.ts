@@ -13,6 +13,12 @@ export type ChallengeStatus = 'not_started' | 'in_progress' | 'completed' | 'fai
 // Event Types from Trackimo API
 export type EventType = 'GEOZONE_ENTRY' | 'GEOZONE_EXIT';
 
+// Device Interface
+export interface Device {
+  id: string;
+  name: string;
+}
+
 // User/Account Interface
 export interface User {
   id: string;
@@ -21,8 +27,9 @@ export interface User {
   fullName: string;
   petName: string;
   petPlan: PetPlan;
-  deviceId: string;
-  deviceName: string;
+  deviceId: string;               // Primary device ID (for backward compatibility)
+  deviceName: string;             // Primary device name (for backward compatibility)
+  devices: Device[];              // Array of all devices (NEW - preferred way)
   accountId: string;
   createdAt: string;              // ISO date string
   totalWalks: number;

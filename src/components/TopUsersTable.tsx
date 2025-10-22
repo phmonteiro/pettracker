@@ -9,7 +9,7 @@ function TopUsersTable({ topUsers }: TopUsersTableProps) {
   if (topUsers.length === 0) {
     return (
       <div className="card">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
           <Trophy className="h-6 w-6 mr-2 text-yellow-500" />
           Top 10 - Ranking Mensal
         </h2>
@@ -23,7 +23,7 @@ function TopUsersTable({ topUsers }: TopUsersTableProps) {
 
   return (
     <div className="card">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
         <Trophy className="h-6 w-6 mr-2 text-yellow-500" />
         Top 10 - Ranking Mensal
       </h2>
@@ -62,7 +62,7 @@ function TopUsersTable({ topUsers }: TopUsersTableProps) {
                   </div>
                 </td>
                 <td>
-                  <div className="font-medium text-gray-900">{user.fullName}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">{user.fullName}</div>
                   <div className="text-xs text-gray-500">NIF: {user.nif}</div>
                 </td>
                 <td>
@@ -77,7 +77,7 @@ function TopUsersTable({ topUsers }: TopUsersTableProps) {
                 <td className="text-center">
                   <div className="flex items-center justify-center">
                     <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                    <span className="font-bold text-gray-900">{user.combinedScore}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{user.combinedScore}</span>
                   </div>
                 </td>
               </tr>

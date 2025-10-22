@@ -8,7 +8,7 @@ function WalksChart({ data }: WalksChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Evolução de Passeios</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Evolução de Passeios</h3>
         <div className="text-center py-8 text-gray-500">
           <p>Sem dados de passeios disponíveis.</p>
         </div>
@@ -18,7 +18,7 @@ function WalksChart({ data }: WalksChartProps) {
 
   return (
     <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Evolução de Passeios (Últimos 6 Meses)</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Evolução de Passeios (Últimos 6 Meses)</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

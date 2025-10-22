@@ -1,20 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getTrackimoClient } from '@/api/trackimoClient';
+import { backendAPI } from '@/api/backendClient';
 import type {
   User,
+  Device,
   SyncUsersResult,
   SyncEventsResult,
   PetPlan,
 } from '@/types';
-import {
-  getAllUsers,
-  saveUser,
-  saveEvents,
-  getAllWalks,
-  saveWalk,
-  saveChallenge,
-  updateUserStats,
-} from './storage';
 import { processEventsIntoWalks, mapWalksToUsers } from './walkProcessor';
 import { calculateAllChallengesForMonth } from './challengeCalculator';
 
@@ -48,14 +41,18 @@ export async function syncUsers(): Promise<SyncUsersResult> {
     const descendants = await client.getAccountDescendants();
     console.log(`📊 Found ${descendants.length} descendant accounts`);
 
-    result.totalProcessed = descendants.length;
+    // Include the main account in the list to sync (it might have devices too!)
+    const allAccounts = [accountDetails, ...descendants];
+    console.log(`📊 Total accounts to sync (including main): ${allAccounts.length}`);
 
-    // Get existing users from storage
-    const existingUsers = getAllUsers();
+    result.totalProcessed = allAccounts.length;
+
+    // Get existing users from Cosmos DB via backend API
+    const existingUsers = await backendAPI.getUsers();
     const existingUsersMap = new Map(existingUsers.map((u) => [u.email, u]));
 
-    // Process each descendant account
-    for (const descendant of descendants) {
+    // Process each account (main + descendants)
+    for (const descendant of allAccounts) {
       try {
         // Use account_id (the actual field from API) or fallback to id
         const accountId = (descendant.account_id || descendant.id)?.toString();
@@ -69,6 +66,13 @@ export async function syncUsers(): Promise<SyncUsersResult> {
         // Get devices for this account
         const devices = await client.getDevices(accountId);
         console.log(`📱 Account ${descendant.email}: ${devices.length} devices`);
+        if (devices.length > 0) {
+          devices.forEach((device, index) => {
+            console.log(`   Device ${index}: deviceId=${device.deviceId}, deviceName=${device.deviceName}`);
+          });
+        } else {
+          console.warn(`   ⚠️ No devices found for account ${accountId}`);
+        }
 
         // Extract NIF from email or use account ID as fallback
         // Assuming email format might contain NIF or use a custom field
@@ -80,17 +84,34 @@ export async function syncUsers(): Promise<SyncUsersResult> {
         // Create or update user
         const existingUser = existingUsersMap.get(descendant.email);
 
+        // Extract all devices as structured array
+        const devicesArray: Device[] = devices
+          .filter(d => d.deviceId)
+          .map(d => ({
+            id: d.deviceId.toString(),
+            name: d.deviceName || 'Unknown Device'
+          }));
+        
+        // Keep backward compatibility fields (primary device)
+        const deviceId = devicesArray[0]?.id || existingUser?.deviceId || '';
+        const deviceName = devicesArray[0]?.name || existingUser?.deviceName || '';
+
         if (existingUser) {
           // Update existing user
-          existingUser.fullName = descendant.full_name || descendant.name || descendant.email;
-          existingUser.deviceId = devices[0]?.id?.toString() || existingUser.deviceId;
-          existingUser.deviceName = devices[0]?.name || existingUser.deviceName;
-          existingUser.petPlan = petPlan;
-          existingUser.active = true;
+          const updatedUser: User = {
+            ...existingUser,
+            fullName: descendant.full_name || descendant.name || descendant.email,
+            deviceId,
+            deviceName,
+            devices: devicesArray,
+            petPlan,
+            accountId: accountId,
+            active: true,
+          };
 
-          saveUser(existingUser);
+          console.log(`✏️ Updating user: ${updatedUser.email}, deviceId: ${deviceId || '(empty)'}, total devices: ${devicesArray.length}`);
+          await backendAPI.saveUser(updatedUser);
           result.updatedUsers++;
-          console.log(`✏️ Updated user: ${existingUser.email}`);
         } else {
           // Create new user
           const newUser: User = {
@@ -98,10 +119,11 @@ export async function syncUsers(): Promise<SyncUsersResult> {
             nif,
             email: descendant.email,
             fullName: descendant.full_name || descendant.name || descendant.email,
-            petName: devices[0]?.name || 'Pet',
+            petName: deviceName || 'Pet',
             petPlan,
-            deviceId: devices[0]?.id?.toString() || '',
-            deviceName: devices[0]?.name || '',
+            deviceId,
+            deviceName,
+            devices: devicesArray,
             accountId: accountId,
             createdAt: new Date().toISOString(),
             totalWalks: 0,
@@ -109,9 +131,9 @@ export async function syncUsers(): Promise<SyncUsersResult> {
             active: true,
           };
 
-          saveUser(newUser);
+          console.log(`✨ Creating new user: ${newUser.email}, deviceId: ${deviceId || '(empty)'}, total devices: ${devicesArray.length}`);
+          await backendAPI.saveUser(newUser);
           result.newUsers++;
-          console.log(`✨ Created new user: ${newUser.email}`);
         }
       } catch (error) {
         console.error(`❌ Error processing account ${descendant.email}:`, error);
@@ -176,8 +198,8 @@ export async function syncEvents(
       throw new Error('Account ID not found in user details');
     }
 
-    // Get all users from storage
-    const users = getAllUsers();
+    // Get all users from Cosmos DB via backend API
+    const users = await backendAPI.getUsers();
     if (users.length === 0) {
       throw new Error('No users found. Please sync users first.');
     }
@@ -197,10 +219,17 @@ export async function syncEvents(
     console.log(`📍 Fetched ${events.length} events`);
     result.totalEvents = events.length;
 
-    // Save raw events
-    saveEvents(events);
+    // Transform events to include deviceId and convert id to string for Cosmos DB
+    const transformedEvents = events.map((event) => ({
+      ...event,
+      id: event.id.toString(), // Cosmos DB requires id as string
+      deviceId: event.device_id, // Add camelCase version for backend compatibility
+    })) as any[];
+
+    // Save raw events to Cosmos DB via backend API
+    await backendAPI.saveEvents(transformedEvents);
     result.savedEvents = events.length;
-    console.log(`💾 Saved ${events.length} raw events`);
+    console.log(`💾 Saved ${events.length} raw events to Cosmos DB`);
 
     // Process events into walks
     const walks = processEventsIntoWalks(events);
@@ -209,8 +238,20 @@ export async function syncEvents(
 
     // Create device ID to user mapping
     const deviceToUserMap = new Map<string, { userId: string; nif: string }>();
-    users.forEach((user) => {
-      if (user.deviceId) {
+    users.forEach((user: User) => {
+      // Map ALL device IDs to this user
+      const allDevices = user.devices || [];
+      allDevices.forEach((device: Device) => {
+        if (device.id) {
+          deviceToUserMap.set(device.id, {
+            userId: user.id,
+            nif: user.nif,
+          });
+        }
+      });
+      
+      // Also add primary deviceId for backward compatibility
+      if (user.deviceId && !deviceToUserMap.has(user.deviceId)) {
         deviceToUserMap.set(user.deviceId, {
           userId: user.id,
           nif: user.nif,
@@ -221,17 +262,35 @@ export async function syncEvents(
     // Map walks to users
     const mappedWalks = mapWalksToUsers(walks, deviceToUserMap);
 
-    // Save walks
-    mappedWalks.forEach((walk) => {
-      if (walk.userId) {
-        saveWalk(walk);
-        result.savedWalks++;
-      } else {
-        console.warn(`⚠️ Walk ${walk.id} has no user mapping`);
-      }
+    console.log(`📊 Device to User mapping entries:`);
+    deviceToUserMap.forEach((value, key) => {
+      console.log(`   deviceId: "${key}" -> userId: ${value.userId}, nif: ${value.nif}`);
     });
+    console.log(`📊 Sample walk deviceIds:`);
+    walks.slice(0, 3).forEach(w => {
+      console.log(`   Walk deviceId: "${w.deviceId}" (type: ${typeof w.deviceId})`);
+    });
+    console.log(`📊 Total walks to save: ${mappedWalks.length}`);
+    console.log(`📊 Walks with userId: ${mappedWalks.filter(w => w.userId).length}`);
+    console.log(`📊 Walks without userId: ${mappedWalks.filter(w => !w.userId).length}`);
 
-    console.log(`💾 Saved ${result.savedWalks} walks`);
+    // Save walks to Cosmos DB via backend API
+    for (const walk of mappedWalks) {
+      if (walk.userId) {
+        try {
+          console.log(`💾 Saving walk ${walk.id} for user ${walk.userId} (device: ${walk.deviceId})`);
+          await backendAPI.saveWalk(walk);
+          result.savedWalks++;
+        } catch (error) {
+          console.error(`❌ Error saving walk ${walk.id}:`, error);
+          // Note: We don't have an errors array for walks in the result, just log it
+        }
+      } else {
+        console.warn(`⚠️ Walk ${walk.id} has no user mapping (deviceId: ${walk.deviceId}, petName: ${walk.petName})`);
+      }
+    }
+
+    console.log(`💾 Saved ${result.savedWalks} walks to Cosmos DB`);
 
     // Calculate challenges for the period
     const month = fromDate.getMonth() + 1;
@@ -239,24 +298,31 @@ export async function syncEvents(
 
     console.log(`🎯 Calculating challenges for ${month}/${year}...`);
 
-    // Get all walks (including previously saved ones)
-    const allWalks = getAllWalks();
+    // Get all walks from Cosmos DB (including previously saved ones)
+    const allWalks = await backendAPI.getWalks();
 
     // Calculate challenges for each user
     for (const user of users) {
       try {
         const challenges = calculateAllChallengesForMonth(allWalks, [user], month, year);
 
-        challenges.forEach((challenge) => {
-          saveChallenge(challenge);
+        // Save challenges to Cosmos DB via backend API
+        for (const challenge of challenges) {
+          await backendAPI.saveChallenge(challenge);
           result.processedChallenges++;
-        });
+        }
 
-        // Update user stats
-        const userWalks = allWalks.filter((w) => w.userId === user.id && w.isValid);
+        // Update user stats (walks and completed challenges count)
+        const userWalks = allWalks.filter((w: any) => w.userId === user.id && w.isValid);
         const completedChallenges = challenges.filter((c) => c.status === 'completed');
 
-        updateUserStats(user.id, userWalks.length, completedChallenges.length);
+        // Update user with new stats
+        const updatedUser: User = {
+          ...user,
+          totalWalks: userWalks.length,
+          totalChallengesCompleted: completedChallenges.length,
+        };
+        await backendAPI.saveUser(updatedUser);
       } catch (error) {
         console.error(`❌ Error calculating challenges for user ${user.email}:`, error);
         result.errors?.push({
