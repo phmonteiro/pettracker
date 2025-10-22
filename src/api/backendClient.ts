@@ -5,7 +5,11 @@
 
 import type { User, Walk, Challenge, TrackimoEvent } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api';
+// Use relative path for production (Azure Static Web Apps automatically routes /api to Azure Functions)
+// Use localhost for local development
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.DEV ? 'http://localhost:7071/api' : '/api'
+);
 
 class BackendAPIClient {
   private baseUrl: string;
