@@ -8,3 +8,7 @@ export * from '../challenges/GetChallenges';
 export * from '../challenges/SaveChallenge';
 export * from '../events/GetEvents';
 export * from '../events/SaveEvents';
+
+// Configuration and debug endpoints
+export * from './functions/config';
+export * from './functions/debug-env';
