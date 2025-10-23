@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getTrackimoClient } from '@/api/trackimoClient';
+import { getTrackimoClientAsync } from '@/api/trackimoClient';
 import { backendAPI } from '@/api/backendClient';
 import type {
   User,
@@ -31,7 +31,7 @@ export async function syncUsers(): Promise<SyncUsersResult> {
 
   try {
     console.log('🚀 Starting user synchronization...');
-    const client = getTrackimoClient();
+    const client = await getTrackimoClientAsync();
 
     // Get current account details
     const accountDetails = await client.getUserDetails();
@@ -186,7 +186,7 @@ export async function syncEvents(
     console.log('🚀 Starting events synchronization...');
     console.log(`   Period: ${fromDate.toISOString()} to ${toDate.toISOString()}`);
 
-    const client = getTrackimoClient();
+    const client = await getTrackimoClientAsync();
 
     // Get current account details
     const accountDetails = await client.getUserDetails();

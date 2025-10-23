@@ -568,13 +568,104 @@ export class TrackimoAPIClient {
 
 // Singleton instance
 let apiClient: TrackimoAPIClient | null = null;
+let configCache: TrackimoConfig | null = null;
+let configPromise: Promise<TrackimoConfig> | null = null;
 
 /**
- * Get or create Trackimo API client instance
+ * Fetch runtime configuration from API
+ */
+async function fetchRuntimeConfig(): Promise<TrackimoConfig> {
+  // Return cached config if available
+  if (configCache) {
+    return configCache;
+  }
+
+  // If already fetching, return the same promise
+  if (configPromise) {
+    return configPromise;
+  }
+
+  console.log('🔧 Fetching runtime configuration from API...');
+
+  configPromise = (async () => {
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || (
+        import.meta.env.DEV ? 'http://localhost:7071/api' : '/api'
+      );
+      
+      const response = await fetch(`${API_BASE_URL}/config`);
+      
+      if (!response.ok) {
+        throw new Error(`Config API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      configCache = {
+        bearerToken: data.trackimo.bearerToken || '',
+        username: data.trackimo.username || '',
+        password: data.trackimo.password || '',
+        apiUrl: data.trackimo.apiUrl || 'https://fidelidade.trackimo.com',
+        clientId: data.trackimo.clientId || '',
+        clientSecret: data.trackimo.clientSecret || '',
+        redirectUri: data.trackimo.redirectUri || '',
+      };
+
+      console.log('✅ Runtime configuration loaded successfully');
+      return configCache;
+    } catch (error) {
+      console.error('❌ Failed to fetch runtime config, falling back to build-time env vars:', error);
+      
+      // Fallback to build-time environment variables
+      configCache = {
+        bearerToken: import.meta.env.VITE_TRACKIMO_BEARER_TOKEN || '',
+        username: import.meta.env.VITE_TRACKIMO_USERNAME || '',
+        password: import.meta.env.VITE_TRACKIMO_PASSWORD || '',
+        apiUrl: import.meta.env.VITE_TRACKIMO_API_URL || 'https://fidelidade.trackimo.com',
+        clientId: import.meta.env.VITE_TRACKIMO_CLIENT_ID || '',
+        clientSecret: import.meta.env.VITE_TRACKIMO_CLIENT_SECRET || '',
+        redirectUri: import.meta.env.VITE_TRACKIMO_REDIRECT_URI || '',
+      };
+      
+      return configCache;
+    } finally {
+      configPromise = null;
+    }
+  })();
+
+  return configPromise;
+}
+
+/**
+ * Get or create Trackimo API client instance (async version)
+ */
+export async function getTrackimoClientAsync(): Promise<TrackimoAPIClient> {
+  if (!apiClient) {
+    const config = await fetchRuntimeConfig();
+
+    console.log('🔧 Trackimo API Configuration:', {
+      username: config.username,
+      apiUrl: config.apiUrl,
+      hasBearerToken: !!config.bearerToken,
+      hasPassword: !!config.password,
+      hasClientId: !!config.clientId,
+      hasClientSecret: !!config.clientSecret,
+    });
+
+    apiClient = new TrackimoAPIClient(config);
+  }
+
+  return apiClient;
+}
+
+/**
+ * Get or create Trackimo API client instance (legacy synchronous - will use cached config)
+ * @deprecated Use getTrackimoClientAsync() for proper runtime config loading
  */
 export function getTrackimoClient(): TrackimoAPIClient {
   if (!apiClient) {
-    const config: TrackimoConfig = {
+    // If no config cache, use build-time environment variables as fallback
+    const config: TrackimoConfig = configCache || {
       bearerToken: import.meta.env.VITE_TRACKIMO_BEARER_TOKEN || '',
       username: import.meta.env.VITE_TRACKIMO_USERNAME || '',
       password: import.meta.env.VITE_TRACKIMO_PASSWORD || '',
@@ -584,7 +675,7 @@ export function getTrackimoClient(): TrackimoAPIClient {
       redirectUri: import.meta.env.VITE_TRACKIMO_REDIRECT_URI || '',
     };
 
-    console.log('🔧 Trackimo API Configuration:', {
+    console.log('🔧 Trackimo API Configuration (sync):', {
       username: config.username,
       apiUrl: config.apiUrl,
       hasBearerToken: !!config.bearerToken,
