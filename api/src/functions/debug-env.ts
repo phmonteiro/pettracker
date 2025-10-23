@@ -40,7 +40,7 @@ export async function debugEnv(request: HttpRequest, context: InvocationContext)
   }
 }
 
-app.http('debug-env', {
+app.http('debugEnv', {
   methods: ['GET'],
   authLevel: 'anonymous',
   handler: debugEnv,
