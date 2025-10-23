@@ -12,3 +12,4 @@ export * from '../events/SaveEvents';
 // Configuration and debug endpoints
 export * from './functions/config';
 export * from './functions/debug-env';
+export * from './functions/trackimo-proxy';
