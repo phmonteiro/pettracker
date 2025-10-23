@@ -46,6 +46,7 @@ async function getTrackimoAccessToken(context: InvocationContext): Promise<strin
 
   try {
     // Step 1: Login to get session cookies
+    context.log('Step 1: Logging in to Trackimo...');
     const loginResponse = await axios.post(
       `${apiUrl}/api/internal/v2/user/login`,
       {
@@ -57,12 +58,38 @@ async function getTrackimoAccessToken(context: InvocationContext): Promise<strin
         headers: {
           'Content-Type': 'application/json',
         },
+        validateStatus: () => true, // Accept any status to debug
       }
     );
 
-    const cookies = loginResponse.headers['set-cookie']?.join('; ') || '';
+    context.log('Login response status:', loginResponse.status);
+    context.log('Login response headers:', JSON.stringify(loginResponse.headers));
+
+    if (loginResponse.status !== 200) {
+      throw new Error(`Login failed with status ${loginResponse.status}: ${JSON.stringify(loginResponse.data)}`);
+    }
+
+    // Extract cookies - handle both array and string formats
+    const setCookieHeaders = loginResponse.headers['set-cookie'];
+    let cookies = '';
+    
+    if (Array.isArray(setCookieHeaders)) {
+      // Array format: ['session=abc; Path=/; HttpOnly', 'token=xyz; Path=/']
+      cookies = setCookieHeaders.map(cookie => cookie.split(';')[0]).join('; ');
+    } else if (setCookieHeaders && typeof setCookieHeaders === 'string') {
+      // String format: 'session=abc; Path=/; HttpOnly'
+      cookies = setCookieHeaders.split(';')[0];
+    }
+
+    context.log('Extracted cookies:', cookies ? 'SET' : 'EMPTY');
+    context.log('Cookie value (first 50 chars):', cookies.substring(0, 50));
+
+    if (!cookies) {
+      throw new Error('No session cookies received from login. Check credentials and Trackimo API status.');
+    }
 
     // Step 2: Get authorization code
+    context.log('Step 2: Getting authorization code...');
     const authResponse = await axios.get(`${apiUrl}/api/v3/oauth2/auth`, {
       params: {
         client_id: clientId,
@@ -72,10 +99,14 @@ async function getTrackimoAccessToken(context: InvocationContext): Promise<strin
       },
       headers: {
         Cookie: cookies,
+        'User-Agent': 'PetTracker-Proxy/1.0',
       },
       maxRedirects: 0,
       validateStatus: (status) => status === 302 || status === 200,
     });
+
+    context.log('Auth response status:', authResponse.status);
+    context.log('Auth response headers:', JSON.stringify(authResponse.headers));
 
     let code: string;
     if (authResponse.status === 302) {
