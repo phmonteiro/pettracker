@@ -8,6 +8,16 @@ export async function config(request: HttpRequest, context: InvocationContext): 
   context.log('HTTP trigger function processed a request for config');
 
   try {
+    // DEBUG: Get all environment variable keys that match our patterns
+    const envKeys = Object.keys(process.env).filter(key => 
+      key.includes('TRACKIMO') || key.includes('COSMOS') || key.includes('VITE')
+    );
+    
+    const envDebug = envKeys.reduce((acc, key) => {
+      acc[key] = process.env[key] ? 'SET' : 'EMPTY';
+      return acc;
+    }, {} as Record<string, string>);
+
     // Return configuration from environment variables
     // These are runtime values from Azure Static Web App settings
     // Try both VITE_ prefix (for compatibility) and without prefix (for Azure Functions)
@@ -29,6 +39,8 @@ export async function config(request: HttpRequest, context: InvocationContext): 
       hasClientId: !!config.trackimo.clientId,
       hasClientSecret: !!config.trackimo.clientSecret,
       apiUrl: config.trackimo.apiUrl,
+      envVarsFound: envKeys.length,
+      envDebug,
     });
 
     return {
@@ -36,7 +48,14 @@ export async function config(request: HttpRequest, context: InvocationContext): 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(config),
+      body: JSON.stringify({
+        config,
+        debug: {
+          environmentVariablesFound: envKeys.length,
+          availableKeys: envDebug,
+          totalEnvVars: Object.keys(process.env).length,
+        }
+      }, null, 2),
     };
   } catch (error) {
     context.error('Error getting config:', error);
