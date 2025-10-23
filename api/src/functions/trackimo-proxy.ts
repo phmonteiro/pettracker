@@ -70,7 +70,7 @@ async function getTrackimoAccessToken(context: InvocationContext): Promise<strin
     }
 
     // Extract cookies - handle both array and string formats
-    const setCookieHeaders = loginResponse.headers['set-cookie'];
+    const setCookieHeaders = loginResponse.headers['set-cookie'] as string[] | string | undefined;
     let cookies = '';
     
     if (Array.isArray(setCookieHeaders)) {
