@@ -45,6 +45,7 @@ jobs:
           app_location: "/"
           api_location: "api"
           output_location: "dist"
+          skip_api_build: true
         env:
           VITE_TRACKIMO_USERNAME: ${{ secrets.VITE_TRACKIMO_USERNAME }}
           VITE_TRACKIMO_PASSWORD: ${{ secrets.VITE_TRACKIMO_PASSWORD }}
