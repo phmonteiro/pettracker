@@ -601,14 +601,21 @@ async function fetchRuntimeConfig(): Promise<TrackimoConfig> {
 
       const data = await response.json();
       
+      // Handle both response formats: direct or wrapped in "config"
+      const trackimoConfig = data.config?.trackimo || data.trackimo;
+      
+      if (!trackimoConfig) {
+        throw new Error('Invalid config response structure');
+      }
+      
       configCache = {
-        bearerToken: data.trackimo.bearerToken || '',
-        username: data.trackimo.username || '',
-        password: data.trackimo.password || '',
-        apiUrl: data.trackimo.apiUrl || 'https://fidelidade.trackimo.com',
-        clientId: data.trackimo.clientId || '',
-        clientSecret: data.trackimo.clientSecret || '',
-        redirectUri: data.trackimo.redirectUri || '',
+        bearerToken: trackimoConfig.bearerToken || '',
+        username: trackimoConfig.username || '',
+        password: trackimoConfig.password || '',
+        apiUrl: trackimoConfig.apiUrl || 'https://fidelidade.trackimo.com',
+        clientId: trackimoConfig.clientId || '',
+        clientSecret: trackimoConfig.clientSecret || '',
+        redirectUri: trackimoConfig.redirectUri || '',
       };
 
       console.log('✅ Runtime configuration loaded successfully');
