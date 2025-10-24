@@ -70,19 +70,28 @@ async function getTrackimoAccessToken(context: InvocationContext): Promise<strin
     }
 
     // Extract cookies - handle both array and string formats
+    // This matches Python's dict(resp.cookies) behavior
     const setCookieHeaders = loginResponse.headers['set-cookie'] as string[] | string | undefined;
     let cookies = '';
     
     if (Array.isArray(setCookieHeaders)) {
       // Array format: ['session=abc; Path=/; HttpOnly', 'token=xyz; Path=/']
-      cookies = setCookieHeaders.map(cookie => cookie.split(';')[0]).join('; ');
+      // Extract just the name=value pairs, strip attributes
+      cookies = setCookieHeaders
+        .map(cookie => {
+          // Get the first part before the first semicolon (the name=value pair)
+          const nameValue = cookie.split(';')[0].trim();
+          return nameValue;
+        })
+        .filter(c => c.length > 0)  // Remove empty strings
+        .join('; ');
     } else if (setCookieHeaders && typeof setCookieHeaders === 'string') {
       // String format: 'session=abc; Path=/; HttpOnly'
-      cookies = setCookieHeaders.split(';')[0];
+      cookies = setCookieHeaders.split(';')[0].trim();
     }
 
     context.log('Extracted cookies:', cookies ? 'SET' : 'EMPTY');
-    context.log('Cookie value (first 50 chars):', cookies.substring(0, 50));
+    context.log('Cookies to send:', cookies);
 
     if (!cookies) {
       throw new Error('No session cookies received from login. Check credentials and Trackimo API status.');
