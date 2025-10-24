@@ -15,10 +15,9 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://fidelidade.trackimo.com',
+        target: 'http://localhost:7071',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
             console.log('Proxying:', req.method, req.url, '→', options.target + req.url);

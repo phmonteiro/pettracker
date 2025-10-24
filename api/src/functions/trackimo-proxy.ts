@@ -182,6 +182,19 @@ export async function trackimoProxy(
     const apiUrl = process.env.TRACKIMO_API_URL || 'https://fidelidade.trackimo.com';
     const fullUrl = `${apiUrl}${endpoint}`;
 
+    // Get query parameters but exclude 'endpoint' parameter
+    const queryParams: Record<string, string> = {};
+    for (const [key, value] of request.query.entries()) {
+      if (key !== 'endpoint') {
+        queryParams[key] = value;
+      }
+    }
+
+    context.log(`Proxying request to: ${fullUrl}`);
+    if (Object.keys(queryParams).length > 0) {
+      context.log(`Query params:`, queryParams);
+    }
+
     // Forward the request to Trackimo API
     const response = await axios({
       method: request.method as any,
@@ -190,9 +203,39 @@ export async function trackimoProxy(
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      params: Object.fromEntries(request.query.entries()),
+      params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
       data: request.body ? await request.text() : undefined,
+      validateStatus: () => true, // Don't throw on any status
     });
+
+    // Log response details for debugging
+    context.log(`Response status: ${response.status}`);
+    context.log(`Response content-type: ${response.headers['content-type']}`);
+    
+    // Check if response is HTML (error page)
+    const contentType = response.headers['content-type'] || '';
+    if (contentType.includes('text/html')) {
+      context.error(`Trackimo returned HTML instead of JSON. Status: ${response.status}`);
+      context.error(`Response preview: ${JSON.stringify(response.data).substring(0, 500)}`);
+      return {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: 'Trackimo API returned HTML instead of JSON',
+          status: response.status,
+          message: 'The Trackimo API may be experiencing issues or the endpoint is incorrect',
+        }),
+      };
+    }
+
+    if (response.status >= 400) {
+      context.error(`Trackimo API error: ${response.status}`);
+      return {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(response.data),
+      };
+    }
 
     return {
       status: 200,

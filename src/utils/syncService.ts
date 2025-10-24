@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getTrackimoClientAsync } from '@/api/trackimoClient';
+import { trackimoClient } from '@/api/trackimoProxyClient';
 import { backendAPI } from '@/api/backendClient';
 import type {
   User,
@@ -31,14 +31,21 @@ export async function syncUsers(): Promise<SyncUsersResult> {
 
   try {
     console.log('🚀 Starting user synchronization...');
-    const client = await getTrackimoClientAsync();
 
     // Get current account details
-    const accountDetails = await client.getUserDetails();
+    const accountDetails = await trackimoClient.getUserAccount();
     console.log(`✅ Authenticated as: ${accountDetails.email}`);
+    console.log('📋 Account details:', JSON.stringify(accountDetails, null, 2));
+
+    // Get account ID (handle different possible field names)
+    const accountId = accountDetails.account_id || accountDetails.accountId || accountDetails.id;
+    if (!accountId) {
+      throw new Error('No account ID found in user details. Available fields: ' + Object.keys(accountDetails).join(', '));
+    }
 
     // Get all descendant accounts (sub-accounts = users)
-    const descendants = await client.getAccountDescendants();
+    const descendantsResponse = await trackimoClient.getDescendants(accountId.toString());
+    const descendants = descendantsResponse.descendants;
     console.log(`📊 Found ${descendants.length} descendant accounts`);
 
     // Include the main account in the list to sync (it might have devices too!)
@@ -64,7 +71,7 @@ export async function syncUsers(): Promise<SyncUsersResult> {
         }
 
         // Get devices for this account
-        const devices = await client.getDevices(accountId);
+        const devices = await trackimoClient.getDevices(accountId);
         console.log(`📱 Account ${descendant.email}: ${devices.length} devices`);
         if (devices.length > 0) {
           devices.forEach((device, index) => {
@@ -186,16 +193,15 @@ export async function syncEvents(
     console.log('🚀 Starting events synchronization...');
     console.log(`   Period: ${fromDate.toISOString()} to ${toDate.toISOString()}`);
 
-    const client = await getTrackimoClientAsync();
-
     // Get current account details
-    const accountDetails = await client.getUserDetails();
+    const accountDetails = await trackimoClient.getUserAccount();
     console.log(`✅ Authenticated as: ${accountDetails.email}`);
+    console.log('📋 Account details:', JSON.stringify(accountDetails, null, 2));
 
-    // Ensure account_id exists
-    const accountId = (accountDetails.account_id || accountDetails.id)?.toString();
+    // Ensure account_id exists (handle different possible field names)
+    const accountId = (accountDetails.account_id || accountDetails.accountId || accountDetails.id)?.toString();
     if (!accountId) {
-      throw new Error('Account ID not found in user details');
+      throw new Error('Account ID not found in user details. Available fields: ' + Object.keys(accountDetails).join(', '));
     }
 
     // Get all users from Cosmos DB via backend API
@@ -204,13 +210,13 @@ export async function syncEvents(
       throw new Error('No users found. Please sync users first.');
     }
 
-    // Convert dates to Unix timestamps (milliseconds)
-    const fromTimestamp = fromDate.getTime();
-    const toTimestamp = toDate.getTime();
+    // Convert dates to Unix timestamps (seconds for Trackimo API)
+    const fromTimestamp = Math.floor(fromDate.getTime() / 1000);
+    const toTimestamp = Math.floor(toDate.getTime() / 1000);
 
     // Fetch events for the main account
     // Note: Events might be aggregated at the main account level
-    const events = await client.getEvents(
+    const events = await trackimoClient.getEvents(
       accountId,
       fromTimestamp,
       toTimestamp
